@@ -31,7 +31,7 @@ async function showBoard() {
       } else {
         squareElement.addEventListener("click", async () => {
           const nextTurnCount = turnCount + 1;
-          await registerTurn();
+          await registerTurn(nextTurnCount, nextDisc, x, y);
         });
       }
 
