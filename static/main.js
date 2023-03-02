@@ -5,7 +5,6 @@ const LIGHT = 2;
 const boardElement = document.getElementById("board");
 
 async function showBoard(turnCount) {
-  const turnCount = 0;
   const response = await fetch(`/api/games/latest/turns/${turnCount}`);
   const responseBody = await response.json();
   const board = responseBody.board;

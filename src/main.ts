@@ -119,6 +119,7 @@ app.get("/api/games/latest/turns/:turnCount", async (req, res) => {
       nextDisc: turn["next_disc"],
       winnerDisc: null,
     };
+    res.json(responseBody);
   } finally {
     await conn.end();
   }
