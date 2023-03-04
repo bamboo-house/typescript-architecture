@@ -1,7 +1,7 @@
 import { TurnRecord } from "./turnRecord";
 import mysql from "mysql2/promise";
 
-export class TurnCateway {
+export class TurnGateway {
   async findForGameIdAndTurnCount(
     conn: mysql.Connection,
     gameId: number,
