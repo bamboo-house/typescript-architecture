@@ -1,10 +1,12 @@
-import express from "express";
-import { GameGateway } from "../dataaccess/gameGateway";
-import { TurnGateway } from "../dataaccess/turnGateway";
-import { SquareGateway } from "../dataaccess/squareGateway";
 import { connectMySQL } from "../dataaccess/connection";
-import { DARK, LIGHT } from "../application/constants";
+import { GameGateway } from "../dataaccess/gameGateway";
 import { MoveGateway } from "../dataaccess/moveGateway";
+import { SquareGateway } from "../dataaccess/squareGateway";
+import { TurnGateway } from "../dataaccess/turnGateway";
+import { Board } from "../domain/board";
+import { toDisc } from "../domain/disc";
+import { Point } from "../domain/point";
+import { Turn } from "../domain/turn";
 
 const gameGateway = new GameGateway();
 const turnGateway = new TurnGateway();
@@ -44,7 +46,7 @@ export class TurnService {
     try {
       const gameRecord = await gameGateway.findLatest(conn);
       if (!gameRecord) {
-        throw new Error("Latest game not found.");
+        throw new Error("Latest game not found");
       }
 
       const turnRecord = await turnGateway.findForGameIdAndTurnCount(
@@ -52,9 +54,8 @@ export class TurnService {
         gameRecord.id,
         turnCount
       );
-
       if (!turnRecord) {
-        throw new Error("Specified turn not found.");
+        throw new Error("Specified turn not found");
       }
 
       const squareRecords = await squareGateway.findForTurnId(
@@ -70,6 +71,7 @@ export class TurnService {
         turnCount,
         board,
         turnRecord.nextDisc,
+        // TODO 決着がついている場合、game_results テーブルから取得する
         undefined
       );
     } finally {
@@ -80,54 +82,55 @@ export class TurnService {
   async registerTurn(turnCount: number, disc: number, x: number, y: number) {
     const conn = await connectMySQL();
     try {
-      // 一つ前のターンを取得する
+      await conn.beginTransaction();
+
+      // 1つ前のターンを取得する
       const gameRecord = await gameGateway.findLatest(conn);
       if (!gameRecord) {
-        throw new Error("Latest game not found.");
+        throw new Error("Latest game not found");
       }
 
       const previousTurnCount = turnCount - 1;
-
       const previousTurnRecord = await turnGateway.findForGameIdAndTurnCount(
         conn,
         gameRecord.id,
         previousTurnCount
       );
-
       if (!previousTurnRecord) {
-        throw new Error("Specified turn not found.");
+        throw new Error("Specified turn not found");
       }
 
       const squareRecords = await squareGateway.findForTurnId(
         conn,
         previousTurnRecord.id
       );
-
       const board = Array.from(Array(8)).map(() => Array.from(Array(8)));
       squareRecords.forEach((s) => {
         board[s.y][s.x] = s.disc;
       });
 
-      // 盤面に置けるかチェック
-
-      // 石を置く
-      board[y][x] = disc;
-
-      // ひっくり返す
-
-      // ターンを保存する
-      const nextDisc = disc === DARK ? LIGHT : DARK;
-      const now = new Date();
-      const turnRecord = await turnGateway.insert(
-        conn,
+      const previousTurn = new Turn(
         gameRecord.id,
-        turnCount,
-        nextDisc,
-        now
+        previousTurnCount,
+        toDisc(previousTurnRecord.nextDisc),
+        undefined,
+        new Board(board),
+        previousTurnRecord.endAt
       );
 
-      await squareGateway.insertAll(conn, turnRecord.id, board);
+      // 石を置く
+      // ドメイン層に抽出
+      const newTurn = previousTurn.placeNext(toDisc(disc), new Point(x, y));
 
+      // ターンを保存する
+      const turnRecord = await turnGateway.insert(
+        conn,
+        newTurn.gameId,
+        newTurn.turnCount,
+        newTurn.nextDisc,
+        newTurn.endAt
+      );
+      await squareGateway.insertAll(conn, turnRecord.id, newTurn.board.discs);
       await moveGateway.insert(conn, turnRecord.id, disc, x, y);
 
       await conn.commit();

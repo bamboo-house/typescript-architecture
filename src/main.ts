@@ -1,11 +1,12 @@
 import express from "express";
-import morgan from "morgan";
 import "express-async-errors";
+import morgan from "morgan";
 import { gameRouter } from "./presentation/gameRouter";
 import { turnRouter } from "./presentation/turnRouter";
 
 const PORT = 3000;
-export const app = express();
+
+const app = express();
 
 app.use(morgan("dev"));
 app.use(express.static("static", { extensions: ["html"] }));
@@ -26,7 +27,7 @@ function errorHandler(
   res: express.Response,
   _next: express.NextFunction
 ) {
-  console.error("Unexprected error occurred", err);
+  console.error("Unexpected error occurred", err);
   res.status(500).send({
     message: "Unexpected error occurred",
   });
