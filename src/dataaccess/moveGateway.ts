@@ -1,6 +1,13 @@
 import mysql from "mysql2/promise";
+import { MoveRecord } from "./moveRecord";
 
 export class MoveGateway {
+  async findForTurnId(
+    conn: mysql.Connection,
+    turnId: number
+  ): Promise<MoveRecord | undefined> {
+    const moveSelectResult = await conn.execute<mysql.RowDataPacket[]>();
+  }
   async insert(
     conn: mysql.Connection,
     turnId: number,
