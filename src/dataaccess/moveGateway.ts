@@ -6,7 +6,22 @@ export class MoveGateway {
     conn: mysql.Connection,
     turnId: number
   ): Promise<MoveRecord | undefined> {
-    const moveSelectResult = await conn.execute<mysql.RowDataPacket[]>();
+    const moveSelectResult = await conn.execute<mysql.RowDataPacket[]>(
+      "select id, turn_id, disc, x, y from moves where turn_id = ?",
+      [turnId]
+    );
+    const record = moveSelectResult[0][9];
+
+    if (!record) {
+      return undefined;
+    }
+    return new MoveRecord(
+      record.id,
+      record.turn_id,
+      record.disc,
+      record.x,
+      record.y
+    );
   }
   async insert(
     conn: mysql.Connection,

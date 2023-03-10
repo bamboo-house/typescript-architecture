@@ -4,10 +4,13 @@ import { GameGateway } from "../dataaccess/gameGateway";
 import { SquareGateway } from "../dataaccess/squareGateway";
 import { connectMySQL } from "../dataaccess/connection";
 import { DARK, INITIAL_BOARD } from "../application/constants";
+import { TurnRepository } from "../domain/turnRepository";
 
 const gameGateway = new GameGateway();
 const turnGateway = new TurnGateway();
 const squareGateway = new SquareGateway();
+
+const turnRepository = new TurnRepository();
 
 export class GameService {
   async startNewGame() {
