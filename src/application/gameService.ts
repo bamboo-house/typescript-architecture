@@ -5,6 +5,9 @@ import { SquareGateway } from "../dataaccess/squareGateway";
 import { connectMySQL } from "../dataaccess/connection";
 import { DARK, INITIAL_BOARD } from "../application/constants";
 import { TurnRepository } from "../domain/turnRepository";
+import { Board } from "../domain/board";
+import { Disc } from "../domain/disc";
+import { Turn } from "../domain/turn";
 
 const gameGateway = new GameGateway();
 const turnGateway = new TurnGateway();
@@ -22,15 +25,16 @@ export class GameService {
 
       const gameRecord = await gameGateway.insert(conn, now);
 
-      const turnRecord = await turnGateway.insert(
-        conn,
+      const firstTurn = new Turn(
         gameRecord.id,
         0,
-        DARK,
+        Disc.Dark,
+        undefined,
+        new Board(INITIAL_BOARD),
         now
       );
 
-      await squareGateway.insertAll(conn, turnRecord.id, INITIAL_BOARD);
+      await turnRepository.save(conn, firstTurn);
 
       await conn.commit();
     } finally {
