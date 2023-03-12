@@ -1,17 +1,14 @@
 import { connectMySQL } from "../dataaccess/connection";
 import { GameGateway } from "../dataaccess/gameGateway";
-import { MoveGateway } from "../dataaccess/moveGateway";
-import { SquareGateway } from "../dataaccess/squareGateway";
-import { TurnGateway } from "../dataaccess/turnGateway";
-import { Board } from "../domain/board";
-import { toDisc } from "../domain/disc";
-import { Point } from "../domain/point";
-import { Turn } from "../domain/turn";
-import { TurnRepository } from "../domain/turnRepository";
+import { toDisc } from "../domain/turn/disc";
+import { GameRepository } from "../domain/game/gameRepository";
+import { Point } from "../domain/turn/point";
+import { TurnRepository } from "../domain/turn/turnRepository";
 
 const gameGateway = new GameGateway();
 
 const turnRepository = new TurnRepository();
+const gameRepository = new GameRepository();
 
 class FindLatestGameTurnByTurnCountOutput {
   constructor(
@@ -44,14 +41,18 @@ export class TurnService {
   ): Promise<FindLatestGameTurnByTurnCountOutput> {
     const conn = await connectMySQL();
     try {
-      const gameRecord = await gameGateway.findLatest(conn);
-      if (!gameRecord) {
+      const game = await gameRepository.findLatest(conn);
+      if (!game) {
         throw new Error("Latest game not found");
+      }
+
+      if (!game.id) {
+        throw new Error("game.id not exist");
       }
 
       const turn = await turnRepository.findForGameIdAndTurnCount(
         conn,
-        gameRecord.id,
+        game.id,
         turnCount
       );
 
@@ -73,15 +74,19 @@ export class TurnService {
       await conn.beginTransaction();
 
       // 1つ前のターンを取得する
-      const gameRecord = await gameGateway.findLatest(conn);
-      if (!gameRecord) {
+      const game = await gameRepository.findLatest(conn);
+      if (!game) {
         throw new Error("Latest game not found");
+      }
+
+      if (!game.id) {
+        throw new Error("game.id not exist");
       }
 
       const previousTurnCount = turnCount - 1;
       const previousTurn = await turnRepository.findForGameIdAndTurnCount(
         conn,
-        gameRecord.id,
+        game.id,
         previousTurnCount
       );
 
