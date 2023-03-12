@@ -3,11 +3,9 @@ import { TurnGateway } from "../dataaccess/turnGateway";
 import { GameGateway } from "../dataaccess/gameGateway";
 import { SquareGateway } from "../dataaccess/squareGateway";
 import { connectMySQL } from "../dataaccess/connection";
-import { DARK, INITIAL_BOARD } from "../application/constants";
-import { TurnRepository } from "../domain/turnRepository";
-import { Board } from "../domain/board";
-import { Disc } from "../domain/disc";
-import { Turn, firstTurn } from "../domain/turn";
+import { TurnRepository } from "../domain/turn/turnRepository";
+
+import { Turn, firstTurn } from "../domain/turn/turn";
 
 const gameGateway = new GameGateway();
 const turnGateway = new TurnGateway();
