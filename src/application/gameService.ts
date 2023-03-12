@@ -7,7 +7,7 @@ import { DARK, INITIAL_BOARD } from "../application/constants";
 import { TurnRepository } from "../domain/turnRepository";
 import { Board } from "../domain/board";
 import { Disc } from "../domain/disc";
-import { Turn } from "../domain/turn";
+import { Turn, firstTurn } from "../domain/turn";
 
 const gameGateway = new GameGateway();
 const turnGateway = new TurnGateway();
@@ -25,16 +25,9 @@ export class GameService {
 
       const gameRecord = await gameGateway.insert(conn, now);
 
-      const firstTurn = new Turn(
-        gameRecord.id,
-        0,
-        Disc.Dark,
-        undefined,
-        new Board(INITIAL_BOARD),
-        now
-      );
+      const turn = firstTurn(gameRecord.id, now);
 
-      await turnRepository.save(conn, firstTurn);
+      await turnRepository.save(conn, turn);
 
       await conn.commit();
     } finally {
