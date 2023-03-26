@@ -1,6 +1,6 @@
 import { connectMySQL } from "../../infrastructure/connection";
 import { GameGateway } from "../../infrastructure/gameGateway";
-import { toDisc } from "../../domain/model/turn/disc";
+import { Disc, toDisc } from "../../domain/model/turn/disc";
 import { GameRepository } from "../../domain/model/game/gameRepository";
 import { Point } from "../../domain/model/turn/point";
 import { TurnRepository } from "../../domain/model/turn/turnRepository";
@@ -70,7 +70,7 @@ export class TurnService {
     }
   }
 
-  async registerTurn(turnCount: number, disc: number, x: number, y: number) {
+  async registerTurn(turnCount: number, disc: Disc, point: Point) {
     const conn = await connectMySQL();
     try {
       await conn.beginTransaction();
@@ -97,7 +97,7 @@ export class TurnService {
 
       // 石を置く
       // ドメイン層に抽出
-      const newTurn = previousTurn.placeNext(toDisc(disc), new Point(x, y));
+      const newTurn = previousTurn.placeNext(disc, point);
 
       // ターンを保存する
       await turnRepository.save(conn, newTurn);
