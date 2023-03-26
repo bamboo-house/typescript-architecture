@@ -115,6 +115,14 @@ export class Board {
     return false;
   }
 
+  count(disc: Disc): number {
+    return this._discs
+      .map((line) => {
+        return line.filter((discOnBoard) => discOnBoard === disc).length;
+      })
+      .reduce((a, b) => a + b, 0);
+  }
+
   private wallDiscs(): Disc[][] {
     const walled: Disc[][] = [];
 
