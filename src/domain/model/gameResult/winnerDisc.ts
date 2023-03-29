@@ -1,4 +1,4 @@
-import { DomainError } from "../../error/DomainError";
+import { DomainError } from "../../error/domainError";
 
 export const WinnerDisc = {
   Draw: 0,
