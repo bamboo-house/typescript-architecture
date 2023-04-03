@@ -1,4 +1,4 @@
-import { WinnerDisc } from "./winnerDisc";
+import { WinnerDisc } from './winnerDisc'
 
 export class GameResult {
   constructor(
@@ -8,14 +8,14 @@ export class GameResult {
   ) {}
 
   get gameId() {
-    return this._gameId;
+    return this._gameId
   }
 
-  get winnerDisc() {
-    return this._winnerDisc;
+  get winenrDisc() {
+    return this._winnerDisc
   }
 
   get endAt() {
-    return this._endAt;
+    return this._endAt
   }
 }

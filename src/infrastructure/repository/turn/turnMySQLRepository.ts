@@ -1,20 +1,19 @@
-import { MoveGateway } from "./moveGateway";
-import { SquareGateway } from "./squareGateway";
-import { TurnGateway } from "./turnGateway";
-import { DomainError } from "../../../domain/error/domainError";
-import { Board } from "../../../domain/model/turn/board";
-import { toDisc } from "../../../domain/model/turn/disc";
-import { Move } from "../../../domain/model/turn/move";
-import { Point } from "../../../domain/model/turn/point";
-import { Turn } from "../../../domain/model/turn/turn";
-import mysql from "mysql2/promise";
-import { TurnRepository } from "../../../domain/model/turn/turnRepository";
+import mysql from 'mysql2/promise'
+import { DomainError } from '../../../domain/error/DomainError'
+import { Board } from '../../../domain/model/turn/board'
+import { toDisc } from '../../../domain/model/turn/disc'
+import { Move } from '../../../domain/model/turn/move'
+import { Point } from '../../../domain/model/turn/point'
+import { Turn } from '../../../domain/model/turn/turn'
+import { TurnRepository } from '../../../domain/model/turn/turnRepository'
+import { MoveGateway } from './moveGateway'
+import { SquareGateway } from './squareGateway'
+import { TurnGateway } from './turnGateway'
 
-const turnGateway = new TurnGateway();
-const squareGateway = new SquareGateway();
-const moveGateway = new MoveGateway();
+const turnGateway = new TurnGateway()
+const moveGateway = new MoveGateway()
+const squareGateway = new SquareGateway()
 
-// Turnというリポジトリを作る
 export class TurnMySQLRepository implements TurnRepository {
   async findForGameIdAndTurnCount(
     conn: mysql.Connection,
@@ -25,35 +24,28 @@ export class TurnMySQLRepository implements TurnRepository {
       conn,
       gameId,
       turnCount
-    );
+    )
     if (!turnRecord) {
-      throw new DomainError(
-        "SpecifiedTurnNotFound",
-        "Specified turn not found"
-      );
+      throw new DomainError('SpecifiedTurnNotFound', 'Specified turn not found')
     }
 
-    const squareRecords = await squareGateway.findForTurnId(
-      conn,
-      turnRecord.id
-    );
-    const board = Array.from(Array(8)).map(() => Array.from(Array(8)));
+    const squareRecords = await squareGateway.findForTurnId(conn, turnRecord.id)
+    const board = Array.from(Array(8)).map(() => Array.from(Array(8)))
     squareRecords.forEach((s) => {
-      board[s.y][s.x] = s.disc;
-    });
+      board[s.y][s.x] = s.disc
+    })
 
-    const moveRecord = await moveGateway.findForTurnId(conn, turnRecord.id);
-    let move: Move | undefined;
+    const moveRecord = await moveGateway.findForTurnId(conn, turnRecord.id)
+    let move: Move | undefined
     if (moveRecord) {
       move = new Move(
         toDisc(moveRecord.disc),
         new Point(moveRecord.x, moveRecord.y)
-      );
+      )
     }
 
     const nextDisc =
-      turnRecord.nextDisc === null ? undefined : toDisc(turnRecord.nextDisc);
-
+      turnRecord.nextDisc === null ? undefined : toDisc(turnRecord.nextDisc)
     return new Turn(
       gameId,
       turnCount,
@@ -61,7 +53,7 @@ export class TurnMySQLRepository implements TurnRepository {
       move,
       new Board(board),
       turnRecord.endAt
-    );
+    )
   }
 
   async save(conn: mysql.Connection, turn: Turn) {
@@ -71,9 +63,9 @@ export class TurnMySQLRepository implements TurnRepository {
       turn.turnCount,
       turn.nextDisc,
       turn.endAt
-    );
+    )
 
-    await squareGateway.insertAll(conn, turnRecord.id, turn.board.discs);
+    await squareGateway.insertAll(conn, turnRecord.id, turn.board.discs)
 
     if (turn.move) {
       await moveGateway.insert(
@@ -82,7 +74,7 @@ export class TurnMySQLRepository implements TurnRepository {
         turn.move.disc,
         turn.move.point.x,
         turn.move.point.y
-      );
+      )
     }
   }
 }

@@ -2,10 +2,10 @@ export class GameRecord {
   constructor(private _id: number, private _startedAt: Date) {}
 
   get id() {
-    return this._id;
+    return this._id
   }
 
   get startedAt() {
-    return this._startedAt;
+    return this._startedAt
   }
 }

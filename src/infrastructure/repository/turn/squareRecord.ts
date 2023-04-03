@@ -8,14 +8,14 @@ export class SquareRecord {
   ) {}
 
   get x() {
-    return this._x;
+    return this._x
   }
 
   get y() {
-    return this._y;
+    return this._y
   }
 
   get disc() {
-    return this._disc;
+    return this._disc
   }
 }
